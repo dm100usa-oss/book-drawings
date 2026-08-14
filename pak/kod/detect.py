@@ -312,6 +312,10 @@ PIECE_OWNER = {
     195: [((402, 519), 8), ((415, 522), 8), ((445, 534), 8), ((446, 553), 8),
           ((439, 569), 8), ((409, 524), 8), ((429, 525), 8), ((423, 524), 8),
           ((431, 520), 8), ((400, 543), 8)],
+    # KNIGA 1 EN.
+    # Unicorn: uho i chelka vtorogo shaga narisovany vyshe ego kletki,
+    # pri razbore oni teryalis i shag vyhodil bez uha
+    121: [((442.2, 150.2), 2), ((433.7, 143.9), 2), ((365.8, 131.1), 2)],
     # Muguete: dugu stebelka tretego shaga kniga narisovala vyshe ego kletki,
     # ona popadala v pervyy shag, a zavitok pervogo shaga uhodil v tretiy
     197: [((96, 212), 3),
@@ -551,9 +555,19 @@ def trace_paths(page):
             dy = max(r2.y0-r1.y1, r1.y0-r2.y1, 0)
             return (dx*dx+dy*dy)**0.5
 
+        # gabarit vsey figury: vse chto lezhit gluboko vnutri nego eto sama
+        # figura, a ne ukrashenie stranicy. Ukrasheniya stoyat sboku i kraem
+        # vyhodyat naruzhu. Bez etogo u alpaki propadala chelka i brovi.
+        whole = vec.bbox(keep)
+        inside = pymupdf.Rect(whole.x0 + 6, whole.y0 + 6, whole.x1 - 6, whole.y1 - 6)
+
         out = list(gs[0])
         for g in gs[1:]:
             b = vec.bbox(g)
+            if b.x0 >= inside.x0 and b.y0 >= inside.y0 and \
+               b.x1 <= inside.x1 and b.y1 <= inside.y1:
+                out.extend(g)
+                continue
             # rasstoyanie meryaem do samih linij figury, a ne do ee ramki:
             # inache oblomok sboku schitaetsya prilezhashchim
             dmin = min(gap(pymupdf.Rect(p['rect']), b) for p in gs[0])

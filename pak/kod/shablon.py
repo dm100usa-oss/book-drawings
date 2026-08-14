@@ -107,13 +107,14 @@ def sheet(out, doc, spi, name, overlay, page_no=None):
     _ord = B.STEP_ORDER.get(spi)
     if _ord and len(_ord) == len(steps):
         steps = [steps[j-1] for j in _ord]
-    # slishkom melkie shagi ubirayutsya, chtoby ostalnye stali krupnee
+    # slishkom melkie shagi ubirayutsya, chtoby ostalnye stali krupnee.
+    # Ubirayutsya oni ne zdes, a posle sovmeshcheniya: seryy sled kazhdogo
+    # shaga eto risunok predydushchego, i esli vykinut shag ran'she, cepochka
+    # rvetsya i figura nachinaet prygat po vysote (sirena, roza, trebol).
     _drop = B.DROP_STEPS.get(spi)
-    if _drop:
-        steps = [s for k, s in enumerate(steps) if k+1 not in _drop]
     cpaths = parts.circle_paths(sp, circles)
     trace = detect.trace_paths(pp)
-    low, art = name.lower(), B.article(name)
+    low, art = B.low(name), B.article(name)
 
     # --- shagi: obshchiy masshtab i sovmeshchenie, kak v osnovnom liste ---
     # ---- steps: common scale, figure registered so it never jumps ----
@@ -143,6 +144,15 @@ def sheet(out, doc, spi, name, overlay, page_no=None):
         else:
             ok = False
             offs.append(offs[k-1] + pymupdf.Point(prev.x0 - cur.x0, prev.y0 - cur.y0))
+
+    # teper, kogda vse shagi sovmeshcheny mezhdu soboy, lishnie ubirayutsya
+    if _drop:
+        keep = [k for k in range(len(steps)) if k+1 not in _drop]
+        steps = [steps[k] for k in keep]
+        offs = [offs[k] for k in keep]
+        n = len(steps)
+        bw = (B.MX1 - B.MX0 - gap*(n-1)) / n
+        inner_w = bw - 14
 
     frame = None
     placed = []
@@ -198,18 +208,18 @@ def sheet(out, doc, spi, name, overlay, page_no=None):
         replay(pg, cpaths[i], fit(cb, pymupdf.Rect(bx+5, SY0+5, bx+25, SY0+25)))
 
     # stroka dlya imeni v samom verhu sleva
-    B.txt(pg, 24, 42, u'Nombre:', B.FB, 12.5, color=B.BLACK)
-    _nx = 24 + B.FB.text_length(u'Nombre:', 12.5) + 8
+    B.txt(pg, 24, 42, u'Name:', B.FB, 12.5, color=B.BLACK)
+    _nx = 24 + B.FB.text_length(u'Name:', 12.5) + 8
     # liniya dlya imeni: punktirnaya i na 20 procentov svetlee chernogo
     B.dashed_line(pg, _nx, 44, _nx + 145, 44, color=(0.2, 0.2, 0.2),
                   width=1, d="[4 3] 0")
-    B.txt(pg, 0, 168, f'Sigue los pasos para dibujar {B.article(name)} {name.lower()}.',
+    B.txt(pg, 0, 168, f'Follow the steps to draw {art} {low}.',
           B.FB, 13, center=W/2)
     B.dashed_line(pg, B.MX0, 328, B.MX1, 328)
-    B.txt(pg, 0, 348, f'Repasa {art} {low}.', B.FB, 13, center=(B.MX0 + VD) / 2)
+    B.txt(pg, 0, 348, f'Trace {art} {low}.', B.FB, 13, center=(B.MX0 + VD) / 2)
     # mezhdu dvumya predlozheniyami stavitsya zametnyy probel, inache oni
     # slivayutsya v odnu strochku
-    B.txt(pg, 0, 348, u'\u00a1Ahora te toca a ti!' + u'\u00a0' * 5 + f'Dibuja {art} {low} t\u00fa solo.',
+    B.txt(pg, 0, 348, u'Now it is your turn!' + u'\u00a0' * 5 + f'Draw {art} {low} yourself.',
           B.FB, 13, center=(VD + B.MX1) / 2)
     # vertikalnaya cherta mezhdu zonami ubrana: ramka risovaniya uzhe delit list
     # B.dashed_line(pg, VD, 332, VD, 632)
@@ -238,7 +248,7 @@ def sheet(out, doc, spi, name, overlay, page_no=None):
     pg.draw_rect(DRAW_RECT, color=(0.75, 0.75, 0.75), width=1.2, radius=0.04)
 
     # --- propis nad nizhney polosoy ---
-    head1 = u'Repasa y escribe la palabra '
+    head1 = u'Trace and write the word '
     w1 = B.FH.text_length(head1, 14)
     w2 = B.FH.text_length(name, 18)
     hx = (B.LX0 + B.LX1) / 2 - (w1 + w2) / 2

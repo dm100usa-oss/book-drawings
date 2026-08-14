@@ -1,7 +1,7 @@
 import pymupdf, vec, detect, parts, skel, textpath, ribbon_shape
 from vec import fit, bbox, replay, replay2
 
-SRC = '/mnt/user-data/uploads/book_spanish_print.pdf'
+SRC = '/mnt/user-data/uploads/book_eng_print.pdf'
 W, H = 612.0, 792.0
 BLACK = (0.0, 0.0, 0.0)
 vec.FATB = 0.35   # plotnost chernyh linij risunka
@@ -13,37 +13,73 @@ FB = pymupdf.Font(fontfile='f/Quicksand-Bold.ttf')
 FM = pymupdf.Font(fontfile='f/Quicksand-Medium.ttf')
 FH = pymupdf.Font(fontfile='/usr/share/fonts/truetype/google-fonts/Poppins-Bold.ttf')
 
-THEMES = [
-    # KNIGA 2 ES. Temy, ne voshedshie v pervuyu knigu. Chislo v skobkah =
-    # nomer stranicy shagov, schet ot nulya.
-    # Animales del bosque y de granja (14)
-    # Poryadok pervyh treh tem zadan zakazchikom: medved, lisa, letuchaya mysh.
-    (53, u'Oso'), (55, u'Zorro'), (49, u'Murci\u00e9lago'), (51, u'Mapache'),
-    (57, u'Gallina'), (59, u'Vaca'), (61, u'Castor'), (63, u'\u00c1guila'),
-    (65, u'H\u00e1mster'), (67, u'Gato'), (69, u'Perro'), (71, u'Ardilla'),
-    (73, u'Pato'), (75, u'Ciervo'),
-    # Insectos y bichos (5)
-    (77, u'Rat\u00f3n'), (79, u'Abeja'), (81, u'Lib\u00e9lula'),
-    (83, u'Caracol'), (85, u'Mariposa'),
-    # Animales acuaticos (8)
-    (103, u'Hipocampo'), (105, u'Foca'), (107, u'Pez payaso'), (109, u'Molusco'),
-    (111, u'Ajolote'), (113, u'Pez globo'), (115, u'Camar\u00f3n'), (117, u'Raya'),
-    # Fantasia (6)
-    (129, u'Grifo'), (131, u'Trole'), (133, u'Hada'), (135, u'Caldera m\u00e1gica'),
-    (137, u'Sombrero de mago'), (139, u'Poci\u00f3n m\u00e1gica'),
-    # Transporte (4)
-    (149, u'Nave'), (151, u'Submarino'), (153, u'Cohete'), (155, u'Scooter'),
-    # Deportes y aficiones (4)
-    (165, u'C\u00e1mara'), (167, u'Tambor'), (169, u'Pelota de playa'), (171, u'Gafas'),
-    # Cosas (2)
-    (179, u'Regalo'), (181, u'Gamepads'),
-    # Naturaleza (5)
-    (193, u'Chich\u00f3n'), (195, u'Cacto'), (197, u'Muguete'), (199, u'Loto'),
-    (201, u'Tulip\u00e1n'),
-    # Comida (8)
-    (215, u'Guinda'), (217, u'Aguacate'), (219, u'Fresa'), (221, u'Pera'),
-    (223, u'Pi\u00f1a'), (225, u'Lim\u00f3n'), (227, u'Calabaza'), (229, u'Bu\u00f1uelo'),
+THEMES_1 = [
+    # KNIGA 1 EN. Temy i ih poryadok povtoryayut pervuyu ispanskuyu knigu:
+    # stranicy angliyskogo istochnika sovpadayut s ispanskim odin v odin.
+    # Chislo v skobkah = nomer stranicy shagov, schet ot nulya.
+    # Land animals (20)
+    (9, u'Lion'), (11, u'Elephant'), (13, u'Zebra'), (15, u'Parrot'),
+    (17, u'Crocodile'), (19, u'Monkey'), (21, u'Kangaroo'), (23, u'Rhino'),
+    (25, u'Flamingo'), (27, u'Lemur'), (29, u'Hummingbird'), (31, u'Chameleon'),
+    (33, u'Giraffe'), (35, u'Koala'), (37, u'Frog'), (39, u'Alpaca'),
+    (41, u'Bunny'), (43, u'Owl'), (45, u'Hedgehog'), (47, u'Goat'),
+    # Aquatic animals (8)
+    (87, u'Shark'), (89, u'Dolphin'), (91, u'Whale'), (93, u'Crab'),
+    (95, u'Octopus'), (97, u'Jellyfish'), (99, u'Sea turtle'), (101, u'Angelfish'),
+    # Fantasy (5)
+    (119, u'Mermaid'), (121, u'Unicorn'), (123, u'Dragon'), (125, u'Crown'),
+    (127, u'Dwarf'),
+    # Vehicles (4)
+    (141, u'Car'), (143, u'Helicopter'), (145, u'Airplane'),
+    (147, u'Hot air balloon'),
+    # Sports and hobbies (4)
+    (157, u'Skateboard'), (159, u'Kite'), (161, u'Badminton'),
+    (163, u'American Football'),
+    # Things (3)
+    (173, u'Beach umbrella'), (175, u'Beach hat'), (177, u'Globe'),
+    # Nature (5)
+    (183, u'Maple Leaf'), (185, u'Rose'), (187, u'Mushroom'), (189, u'Clover'),
+    (191, u'Sunflower'),
+    # Food (6)
+    (203, u'Cake'), (205, u'Ice cream'), (207, u'Watermelon'), (209, u'Carrot'),
+    (211, u'Broccoli'), (213, u'Orange'),
 ]
+
+THEMES_2 = [
+    # KNIGA 2 EN. Ostavshiesya 56 tem. Poryadok povtoryaet vtoruyu ispanskuyu
+    # knigu: pervye tri temy postavleny po prosbe zakazchika.
+    # Land animals (14)
+    (53, u'Bear'), (55, u'Fox'), (49, u'Bat'), (51, u'Raccoon'),
+    (57, u'Chicken'), (59, u'Cow'), (61, u'Beaver'), (63, u'Eagle'),
+    (65, u'Hamster'), (67, u'Cat'), (69, u'Dog'), (71, u'Squirrel'),
+    (73, u'Duck'), (75, u'Deer'),
+    # Insects and bugs (5)
+    (77, u'Mouse'), (79, u'Bee'), (81, u'Dragonfly'), (83, u'Snail'),
+    (85, u'Butterfly'),
+    # Aquatic animals (8)
+    (103, u'Seahorse'), (105, u'Seal'), (107, u'Clown fish'), (109, u'Shellfish'),
+    (111, u'Axolotl'), (113, u'Pufferfish'), (115, u'Shrimp'), (117, u'Manta ray'),
+    # Fantasy (6)
+    (129, u'Griffin'), (131, u'Troll'), (133, u'Fairy'), (135, u'Magic cauldron'),
+    (137, u"Wizard's hat"), (139, u'Magic potion'),
+    # Vehicles (4)
+    (149, u'Ship'), (151, u'Submarine'), (153, u'Rocket'), (155, u'Scooter'),
+    # Sports and hobbies (4)
+    (165, u'Camera'), (167, u'Drum'), (169, u'Beach Ball'), (171, u'Sunglasses'),
+    # Things (2)
+    (179, u'Present'), (181, u'Gamepad'),
+    # Nature (5)
+    (193, u'Pine cone'), (195, u'Cactus'), (197, u'Lily of the valley'),
+    (199, u'Lotus'), (201, u'Tulip'),
+    # Food (8)
+    (215, u'Cherry'), (217, u'Avocado'), (219, u'Strawberry'), (221, u'Pear'),
+    (223, u'Pineapple'), (225, u'Lemon'), (227, u'Pumpkin'), (229, u'Donut'),
+]
+
+# Kakuyu knigu sobiraem. Zadaetsya peremennoy okruzheniya BOOK.
+import os
+BOOK = int(os.environ.get('BOOK', '1'))
+THEMES = THEMES_1 if BOOK == 1 else THEMES_2
 
 # Rod slova beretsya iz knigi, ne ugadyvaetsya. Zdes tolko zhenskiy rod.
 FEM = {
@@ -181,12 +217,20 @@ PLURAL = {'sunglasses'}
 
 
 def article(name):
-    low = name.lower()
-    if low in PLURAL_F:
-        return u'las'
-    if low in PLURAL_M:
-        return u'los'
-    return u'la' if low in FEM else u'el'
+    """V angliyskom pered nazvaniem stoit the: 'draw the lion'.
+    Podhodit i mnozhestvennomu chislu: 'draw the sunglasses'."""
+    return u'the'
+
+
+# Slova, kotorye v nazvanii vsegda pishutsya s bolshoy bukvy.
+KEEP_CAPS = {'american'}
+
+
+def low(name):
+    """Nazvanie so strochnoy bukvy, no sobstvennye slova ostayutsya s bolshoy:
+    'American Football' -> 'American football'."""
+    return ' '.join(w if w.lower() in KEEP_CAPS else w.lower()
+                    for w in name.split(' '))
 
 
 def build_page(out, doc, spi, name):
