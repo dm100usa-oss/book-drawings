@@ -30,7 +30,7 @@ def teacher_page(out, n):
     pg = out.new_page(width=W, height=H)
     x0, x1 = 56, W - 56
     y = 108
-    pg.insert_text((x0, y), 'A Year-Long, Ready-to-Use Resource',
+    pg.insert_text((x0, y), 'Ready to Use All Year Long',
                    fontsize=23, fontfile=B.HEAD_FONT, fontname='H', color=(0, 0, 0))
     y += 40
 
