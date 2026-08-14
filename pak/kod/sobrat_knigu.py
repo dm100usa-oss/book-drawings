@@ -65,7 +65,7 @@ def key(name):
     return unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode()
 
 
-def main(a=0, b=55, out_path='/home/claude/kniga_en.pdf'):
+def main(a=0, b=55, out_path='/home/claude/kniga_en.pdf', off=0):
     doc = pymupdf.open(B.SRC)
     out = pymupdf.open()
     for i in range(a, b):
@@ -76,7 +76,7 @@ def main(a=0, b=55, out_path='/home/claude/kniga_en.pdf'):
         if png is None:
             print('NET SCENY:', name)
             continue
-        shablon.sheet(out, doc, spi, name, png, page_no=i + 1)
+        shablon.sheet(out, doc, spi, name, png, page_no=i + 1 + off)
         print(i + 1, name, 'ok', flush=True)
     out.save(out_path, garbage=4, deflate=True)
     print('sohraneno', out_path)
@@ -85,6 +85,7 @@ def main(a=0, b=55, out_path='/home/claude/kniga_en.pdf'):
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1:
-        main(int(sys.argv[1]), int(sys.argv[2]), sys.argv[3])
+        off = int(sys.argv[4]) if len(sys.argv) > 4 else 0
+        main(int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], off)
     else:
         main()

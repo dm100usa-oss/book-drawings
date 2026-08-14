@@ -515,6 +515,13 @@ def dash_kind(paths):
     return n * 2 >= len(paths)
 
 
+# Tochechnyy vozvrat poteryannyh kuskov figury dlya obvodki.
+# Klyuch: nomer stranicy s figuroy. Znachenie: pryamougolniki kuskov.
+TRACE_KEEP = {
+    114: [(400, 167, 424, 191)],   # Pufferfish: vtoroy glaz teryalsya
+}
+
+
 def trace_paths(page):
     dr = page.get_drawings()
     best_ps, best_area = [], -1
@@ -576,5 +583,21 @@ def trace_paths(page):
             same_dash = (dash_kind(g) == dash_kind(gs[0]))
             if same_dash and (dmin < 8 or b.get_area() > 0.05*body.get_area()):
                 out.extend(g)
+        return _trace_add(page, dr, out)
+    return _trace_add(page, dr, keep)
+
+
+def _trace_add(page, dr, out):
+    """Vozvrashchaet kuski, perechislennye v TRACE_KEEP, esli otsev ih vybrosil."""
+    boxes = TRACE_KEEP.get(page.number)
+    if not boxes:
         return out
-    return keep
+    have = [pymupdf.Rect(p['rect']) for p in out]
+    for bx in boxes:
+        box = pymupdf.Rect(*bx)
+        for x in dr:
+            r = pymupdf.Rect(x['rect'])
+            if r in box and not any(abs(r.x0-u.x0) < 0.5 and abs(r.y0-u.y0) < 0.5
+                                    for u in have):
+                out.append(x)
+    return out

@@ -95,7 +95,7 @@ def sheet(out, doc, spi, name, overlay, page_no=None):
     if tpaths:
         tb = bbox(tpaths)
         rib = RIBBON if RIBBON is not None else ribbon_rect(overlay)
-        k = min(TITLE_H / tb.height, (rib.width - 26) / tb.width)
+        k = min(TITLE_H / tb.height, (rib.width - 44) / tb.width)
         w2, h2 = tb.width * k, tb.height * k
         cx2, cy2 = (rib.x0 + rib.x1) / 2, (rib.y0 + rib.y1) / 2
         replay2(pg, tpaths,
