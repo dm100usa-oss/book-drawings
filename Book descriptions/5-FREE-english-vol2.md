@@ -1,16 +1,15 @@
-# 1. FREE SAMPLE / LION / ENGLISH / VOLUME 1
+# 5. FREE SAMPLE / FOX / ENGLISH / VOLUME 2
 
 Copy into TPT only: the Title, the Description down to the signature Ricardo Demi,
 and the Highlights values. Everything under INTERNAL NOTES stays in this file.
 
-
 ## Title
 
-FREE Directed Drawing Volume 1 | 8 No Prep Draw Trace Write Worksheets | Grades K-2
+FREE Directed Drawing Volume 2 | 9 No Prep Draw Trace Write Worksheets | Grades K-2
 
 ## Description
 
-This free set includes 8 complete directed drawing activities for Grades K-2. They are the same worksheets that appear in the full 55-activity collection, Volume 1, with nothing shortened and no watermarks.
+This free set includes 9 complete directed drawing activities for Grades K-2. They are the same worksheets that appear in the full collection, Volume 2, with nothing shortened and no watermarks.
 
 The set includes one activity from each theme in the book, so you can see the range of drawings and judge whether the format suits your students.
 
@@ -40,10 +39,10 @@ The small themed illustrations and the lettering on each page can also be colore
 
 **What's Included**
 
-8 complete activities:
-Lion, Crab, Unicorn, Helicopter, American Football, Beach Umbrella, Mushroom, Cake
+9 complete activities:
+Fox, Snail, Clown fish, Wizard's hat, Rocket, Beach Ball, Present, Tulip, Cherry
 
-10 pages, PDF, US Letter, black and white, Grades K-2
+11 pages, PDF, US Letter, black and white, Grades K-2
 
 **When to Use It**
 
@@ -57,16 +56,17 @@ English vocabulary, handwriting, fine motor skills, hand-eye coordination, follo
 
 **The Full Collection**
 
-Volume 1 has 55 activities across eight themes:
+Volume 2 has 55 activities plus 1 bonus, across nine themes:
 
-Animals 20
+Animals 14
+Bugs and Little Creatures 5
 Sea Life 8
-Fantasy 5
+Fantasy 6
 Vehicles 4
 Sports and Hobbies 4
-Things 3
+Things 2
 Nature 5
-Food 6
+Food 8
 
 This free set and the full collection are also available in Spanish.
 
@@ -83,9 +83,10 @@ INTERNAL NOTES. DO NOT PASTE INTO TPT.
 ---------------------------------------------------------------------
 
 Files to attach
-  Main file: EN-book-1-FREE-SAMPLE.pdf
-  Cover image: cover-english-lion-v2.png
-  Extra images: the 3 banners from Banners/Lion en
+  Main file: EN-book-2-FREE-SAMPLE.pdf
+  Cover image: cover-english-fox-v4.png
+  Extra images: the 3 banners from Banners/Fox en
+
 
 Highlights
   Price: Free
@@ -95,12 +96,11 @@ Highlights
   Tags (resource types): Worksheets, Printables, Activities
   Extra filters: Homeschool; ESL, EFL, and ELL
   Teaching Duration: leave empty
-  Pages: 10
+  Pages: 11
 
 Standards: leave empty.
 
-Autumn, once Volume 2 is live. Put this line back into "The Full Collection", after the
-list of themes:
-  Volume 2 adds 55 more activities plus 1 bonus, with no repeats from Volume 1.
-And change the closing line of that block to:
-  This free set and both volumes are also available in Spanish.
+Volume 1 is already live by the time this listing goes up. Once it is, add this line to
+"The Full Collection", right after the list of themes:
+  Volume 1 has 55 more activities, with no repeats from this book. Both volumes are
+  available together as a bundle at a lower price.
