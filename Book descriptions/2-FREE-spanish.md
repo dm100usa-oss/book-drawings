@@ -94,7 +94,8 @@ Highlights
   Grades: Kindergarten, 1st, 2nd
   Subjects: Spanish, Visual Arts, Vocabulary
   Tags (resource types): Worksheets, Printables, Activities
-  Extra filters: Homeschool; En espanol
+  Extra filters: Homeschool; En Espanol
+  NOT ESL EFL and ELL: that filter is about learning English
   Teaching Duration: leave empty
   Pages: 10
 
