@@ -1,14 +1,13 @@
-# 2. FREE SAMPLE / LION / SPANISH / VOLUME 1
-
-Copy into TPT only: the Title, the Description down to the signature Ricardo Demi,
-and the Highlights values. Everything under INTERNAL NOTES stays in this file.
-
-
-## Title
+==========================================================
+ПОЛЕ TITLE. Вставить одной строкой:
+==========================================================
 
 FREE Spanish Directed Drawing Grades K-2 | 8 No Prep Dibujo Dirigido Worksheets
 
-## Description
+
+==========================================================
+ПОЛЕ DESCRIPTION. Вставить всё до строки КОНЕЦ.
+==========================================================
 
 This free set includes 8 complete directed drawing activities for Grades K-2, with Spanish vocabulary on every page. They are the same worksheets that appear in the full 55-activity collection, Volume 1, with nothing shortened and no watermarks.
 
@@ -16,7 +15,7 @@ The set includes one activity from each theme in the book, so you can see the ra
 
 No prep is needed. Choose a page, print it, and use it in class.
 
-**How Each Activity Works**
+How Each Activity Works
 
 Each page takes a student through four stages.
 
@@ -30,7 +29,7 @@ Each page takes a student through four stages.
 
 Drawing, fine motor practice, handwriting, and Spanish vocabulary all sit in one activity.
 
-**For Early Finishers**
+For Early Finishers
 
 Once a student has drawn the main character or object, the open space around it can be used to keep going.
 
@@ -38,24 +37,24 @@ Around a finished animal, for example, a student can add trees, grass, rocks, th
 
 The small themed illustrations and the lettering on each page can also be colored. Students who finish the main task early have somewhere to continue working independently while the rest of the class catches up.
 
-**What's Included**
+What's Included
 
 8 complete activities:
 León, Cangrejo, Unicornio, Helicóptero, Fútbol americano, Sombrilla de playa, Seta, Torta
 
 10 pages, PDF, US Letter, black and white, Grades K-2
 
-**When to Use It**
+When to Use It
 
 Spanish classes, dual language and immersion classrooms, morning work, art centers, independent work, early finishers, sub plans.
 
 It is also useful on the days when you need a self-contained drawing activity that can be handed out with no preparation.
 
-**What Students Practice**
+What Students Practice
 
 Spanish vocabulary, handwriting, fine motor skills, hand-eye coordination, following step-by-step visual directions, independent work, drawing confidence.
 
-**The Full Collection**
+The Full Collection
 
 Volume 1 has 55 activities across eight themes:
 
@@ -70,7 +69,7 @@ Food 6
 
 This free set and the full collection are also available in English.
 
-**Terms of Use**
+Terms of Use
 
 This resource is licensed for use by one teacher in their own classroom.
 
@@ -78,30 +77,4 @@ Thank you for using this with your students. I hope your class enjoys these page
 
 Ricardo Demi
 
----------------------------------------------------------------------
-INTERNAL NOTES. DO NOT PASTE INTO TPT.
----------------------------------------------------------------------
-
-Files to attach
-  Main file: ES-book-1-FREE-SAMPLE.pdf
-  Cover image: Free books/Banners/lion es free/1-cover.png
-  Extra images: 2-collection.jpg, 3-print-and-go.jpg, 4-early-finishers.jpg
-                from the same folder
-
-Highlights
-  Price: Free
-  Digital downloads: PDF
-  Grades: Kindergarten, 1st, 2nd
-  Subjects: Spanish, Visual Arts, Vocabulary
-  Tags (resource types): Worksheets, Printables, Activities
-  Extra filters: Homeschool; En espanol
-  Teaching Duration: leave empty
-  Pages: 10
-
-Standards: leave empty.
-
-Autumn, once Volume 2 is live. Put this line back into "The Full Collection", after the
-list of themes:
-  Volume 2 adds 55 more activities plus 1 bonus, with no repeats from Volume 1.
-And change the closing line of that block to:
-  This free set and both volumes are also available in English.
+КОНЕЦ
