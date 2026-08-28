@@ -5,11 +5,12 @@ import random
 import subprocess
 from PIL import Image, ImageFont
 import numpy as np
-import letters as LT
+import json
 
 TOD = 'repos/toddler-coloring-book/public/drawings'
 MAG = 'repos/magic-of-discoveries/public/printables'
 CACHE = 'vec'
+VEC = json.load(open('letter-corner/data/vec3/letters.json'))
 os.makedirs(CACHE, exist_ok=True)
 
 # ---------- состав книги ----------
@@ -53,8 +54,8 @@ FRAMES = [('What do you see?', ['I', 'see']),
 
 
 # ---------- векторизация рисунка ----------
-def vectorize(key):
-    out = os.path.join(CACHE, key.replace(':', '_') + '.svg')
+def vectorize(key, solid=False):
+    out = os.path.join(CACHE, key.replace(':', '_') + ('_s' if solid else '') + '.svg')
     if os.path.exists(out):
         return open(out).read()
     if key.startswith('M:'):
@@ -69,7 +70,11 @@ def vectorize(key):
     im = im.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
     k = max(1, int(1800 / max(im.size)))
     im = im.resize((im.width * k, im.height * k), Image.LANCZOS)
-    b = (np.array(im) < 150).astype(np.uint8) * 255
+    bm = np.array(im) < 150
+    if solid:
+        from scipy import ndimage as _nd
+        bm = _nd.binary_fill_holes(_nd.binary_closing(bm, np.ones((9, 9))))
+    b = bm.astype(np.uint8) * 255
     Image.fromarray(255 - b).save('/tmp/t.pbm')
     subprocess.run(['potrace', '-s', '-o', '/tmp/t.svg', '--turdsize', '6',
                     '--alphamax', '1.0', '--opttolerance', '0.2', '/tmp/t.pbm'],
@@ -82,8 +87,8 @@ def vectorize(key):
     return res
 
 
-def art(key):
-    s = vectorize(key)
+def art(key, solid=False):
+    s = vectorize(key, solid)
     m = re.match(r'<!--([\d\.]+) ([\d\.]+)-->', s)
     return float(m.group(1)), float(m.group(2)), s[m.end():]
 
@@ -160,6 +165,50 @@ def _measure_pairs():
     return out
 
 
+GAPU = 9.0               # gap between the two letters, letter units
+PAD_X, PAD_Y = 8.0, 5.0  # free space inside the corner frame, points
+CIRC_R = 3.7
+
+
+def _extent(ch):
+    """true bounds of a letter with its circles, rings, arrows and dashes"""
+    L = VEC[ch]
+    x0, x1 = 0.0, L['w']
+    yt, yb = L['top'], L['bot']
+    for c in L['circles']:
+        x0 = min(x0, c['x'] - CIRC_R); x1 = max(x1, c['x'] + CIRC_R)
+        yt = min(yt, c['y'] - CIRC_R); yb = max(yb, c['y'] + CIRC_R)
+    for e in L.get('extra', []):
+        if e.get('kind') == 'ring':
+            x0 = min(x0, e['x'] - e['r']); x1 = max(x1, e['x'] + e['r'])
+            yt = min(yt, e['y'] - e['r']); yb = max(yb, e['y'] + e['r'])
+        elif e.get('kind') == 'dash':
+            for px, py in e['pts']:
+                x0 = min(x0, px); x1 = max(x1, px)
+                yt = min(yt, py); yb = max(yb, py)
+        else:
+            r = e['s'] * 1.2
+            x0 = min(x0, e['x'] - r); x1 = max(x1, e['x'] + r)
+            yt = min(yt, e['y'] - r); yb = max(yb, e['y'] + r)
+    return x0, x1, yt, yb
+
+
+def _pair_box(c):
+    au, bu, tu, du = _extent(c)
+    al, bl, tl, dl = _extent(c.lower())
+    return (bu - au) + GAPU + (bl - al), min(tu, tl), max(du, dl)
+
+
+def _corner_scale():
+    f = 1e9
+    for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+        w, t, b = _pair_box(c)
+        f = min(f, (206.0 - 2 * PAD_X) / w, (134.0 - 2 * PAD_Y) / (b - t))
+    return f
+
+
+FL_CORNER = _corner_scale()
+
 PAIR = _measure_pairs()
 MAXTOP = max(v[0] for v in PAIR.values())
 MAXBOT = max(v[1] for v in PAIR.values())
@@ -167,6 +216,39 @@ MAXW = max(v[2] for v in PAIR.values())
 PAD_T = 14.0
 FL_GLOBAL = min((134.0 - 2 * PAD_T) / (MAXTOP + MAXBOT),
                 (206.0 - 34.0) / MAXW)
+
+
+NO_PATCH = {
+    '036',            # bee, flying
+    '069', 'N:zeppelin',              # jet and zeppelin, flying
+    '045', '044', '040', '042', '052',  # jellyfish, octopus, shark, whale, axolotl
+    'M:ocean-island', 'N:yacht',        # already surrounded by water
+    '099', '109', '105', '100', '108',  # ice cream and fruit, nothing to stand on
+    'N:violin', 'N:quilt',
+}
+
+
+def ground_patch(A, cx, cy, rx, ry, seed):
+    """a soft dashed patch around the animal: room to draw the surroundings"""
+    rnd = random.Random(seed ^ 0x5EED)
+    n = 22
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n + rnd.uniform(-0.05, 0.05)
+        up = math.sin(a) < 0                      # far edge, more ragged
+        k = 1.0 + rnd.uniform(-0.22 if up else -0.10, 0.22 if up else 0.10)
+        ky = 1.0 + rnd.uniform(-0.22, 0.22)
+        pts.append((cx + rx * k * math.cos(a), cy + ry * ky * math.sin(a)))
+    mid = lambda p, q: ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
+    m0 = mid(pts[-1], pts[0])
+    d = 'M %.1f %.1f' % m0
+    for i in range(n):
+        c = pts[i]
+        m = mid(pts[i], pts[(i + 1) % n])
+        d += ' Q %.1f %.1f %.1f %.1f' % (c[0], c[1], m[0], m[1])
+    d += ' Z'
+    A(f'<path d="{d}" fill="none" stroke="#9a9a9a" stroke-width="1.1" '
+      f'stroke-dasharray="6,5" stroke-linecap="round"/>')
 
 
 def page(letter, key, word, article, frame_i, seed):
@@ -192,25 +274,33 @@ def page(letter, key, word, article, frame_i, seed):
     def put(txt, x, base, size, bold=False):
         f = _b if bold else _r
         fam = 'School Print Bold' if bold else 'School Print'
-        st = (0.105 if bold else STEM_R) * size
-        xh = (0.438 if bold else XH_R) * size
+        # the bowl of the font's own e is thinner than its stem, and its e is
+        # slightly taller than the x-height; match those so the drawn e does
+        # not read as bold next to the other letters
+        st = (0.105 if bold else STEM_R) * size     # stem, used by the capital I
+        est = (0.070 if bold else 0.048) * size     # bowl of the e, thinner
+        xh = (0.452 if bold else 0.421) * size
+        eov = (0.0135 if bold else 0.0115) * size   # round letters dip below the line
+        eend = 318 if bold else 325                 # where the tail of the e stops
+        ebar = 0.92 if bold else 0.95               # how far the crossbar reaches
         for ch in txt:
             if ch == 'e':
                 a_ = f.getlength('e') / 1000 * size
-                r = (xh - st) / 2
-                cx, cy = x + a_ / 2, base - xh / 2
+                r = (xh - est) / 2
+                cx, cy = x + a_ / 2, base + eov - xh / 2
 
                 def PT(ang):
                     t = math.radians(ang)
                     return cx + r * math.cos(t), cy - r * math.sin(t)
-                p0, p1, p2 = PT(0), PT(150), PT(300)
+                p0, p1, p2 = PT(0), PT(150), PT(eend)
                 A(f'<path d="M {p0[0]:.2f} {p0[1]:.2f} '
                   f'A {r:.2f} {r:.2f} 0 0 0 {p1[0]:.2f} {p1[1]:.2f} '
                   f'A {r:.2f} {r:.2f} 0 0 0 {p2[0]:.2f} {p2[1]:.2f}" '
-                  f'fill="none" stroke="#000" stroke-width="{st:.2f}" '
+                  f'fill="none" stroke="#000" stroke-width="{est:.2f}" '
                   f'stroke-linecap="round"/>')
-                A(f'<path d="M {cx-r:.2f} {cy:.2f} L {cx+r:.2f} {cy:.2f}" '
-                  f'fill="none" stroke="#000" stroke-width="{st:.2f}" '
+                A(f'<path d="M {cx-r:.2f} {cy:.2f} '
+                  f'L {cx+r*ebar:.2f} {cy:.2f}" '
+                  f'fill="none" stroke="#000" stroke-width="{est:.2f}" '
                   f'stroke-linecap="round"/>')
                 x += a_
             elif ch == 'I':
@@ -237,151 +327,50 @@ def page(letter, key, word, article, frame_i, seed):
     BX = R - BW
     A(f'<rect x="{BX}" y="{BY}" width="{BW}" height="{BH}" rx="12" '
       f'fill="#fff" stroke="#000" stroke-width="2"/>')
-    pair = letter + letter.lower()
-    ptop, pbot, pw, plsb = PAIR[pair]
-    FL = FL_GLOBAL
-    gb = BY + PAD_T + MAXTOP * FL
-    WALL = 3.2
-    ST = 0.14 * FL
-    CAPH = 0.735 * FL
-    XHH = 0.458 * FL
-
-    def hol(paths, tt):
-        for p in paths:
-            A(f'<path d="{p}" fill="none" stroke="#000" stroke-width="{tt:.2f}" '
-              f'stroke-linecap="round" stroke-linejoin="round"/>')
-        for p in paths:
-            A(f'<path d="{p}" fill="none" stroke="#fff" '
-              f'stroke-width="{tt-2*WALL:.2f}" stroke-linecap="round" '
-              f'stroke-linejoin="round"/>')
-
-    def big_I(x, base):
-        bw = 0.49 * FL
-        y1, y2 = base - CAPH + ST / 2, base - ST / 2
-        hol([f'M {x+bw/2:.2f} {y1:.2f} L {x+bw/2:.2f} {y2:.2f}',
-             f'M {x+ST/2:.2f} {y1:.2f} L {x+bw-ST/2:.2f} {y1:.2f}',
-             f'M {x+ST/2:.2f} {y2:.2f} L {x+bw-ST/2:.2f} {y2:.2f}'], ST)
-        return bw
-
-    def small_i(x, base):
-        hol([f'M {x+ST/2:.2f} {base-XHH+ST/2:.2f} '
-             f'L {x+ST/2:.2f} {base-ST/2:.2f}'], ST)
-        cy = base - XHH - ST * 1.15
-        A(f'<circle cx="{x+ST/2:.2f}" cy="{cy:.2f}" r="{ST/2:.2f}" '
-          f'fill="#fff" stroke="#000" stroke-width="{WALL}"/>')
-        return ST
-
-    def small_e(x, base):
-        r = (XHH - ST) / 2
-        cx, cy = x + XHH / 2, base - XHH / 2
-
-        def PT(ang):
-            t = math.radians(ang)
-            return cx + r * math.cos(t), cy - r * math.sin(t)
-        p0, p1, p2 = PT(0), PT(150), PT(300)
-        hol([f'M {p0[0]:.2f} {p0[1]:.2f} '
-             f'A {r:.2f} {r:.2f} 0 0 0 {p1[0]:.2f} {p1[1]:.2f} '
-             f'A {r:.2f} {r:.2f} 0 0 0 {p2[0]:.2f} {p2[1]:.2f}',
-             f'M {cx-r:.2f} {cy:.2f} L {cx+r:.2f} {cy:.2f}'], ST)
-        return XHH
-
-    def font_glyph(ch, x, base):
-        fh = ImageFont.truetype(FHEAVY, 1000)
-        A(f'<text x="{x:.2f}" y="{base:.2f}" font-family="School Print Heavy" '
-          f'font-size="{FL:.1f}" fill="#fff" stroke="#000" '
-          f'stroke-width="3.2" stroke-linejoin="round" '
-          f'stroke-linecap="round">{ch}</text>')
-        return fh.getlength(ch) / 1000 * FL
-
-    # --- геометрия пары букв ---
-    fh = ImageFont.truetype(FHEAVY, 1000)
-    CAPT = 0.735 * FL
-    XHT = 0.458 * FL
-    ASCT = 0.788 * FL
-    DESC = 0.218 * FL
     up, lo = letter, letter.lower()
-    ASCENDERS = set('bdfhklt')
-    DESCENDERS = set('gjpqy')
+    LU, LL = VEC[up], VEC[lo]
 
-    def inkbox(ch):
-        m = GLYPH[ch]
-        return m['lsb'] * FL, m['w'] * FL, m['adv'] * FL
+    aU, bU, _, _ = _extent(up)
+    aL, bL, _, _ = _extent(lo)
+    wtot, ytop, ybot = _pair_box(letter)
+    FL = FL_CORNER
+    gb = BY + (BH - (ybot - ytop) * FL) / 2 - ytop * FL
+    gx = BX + (BW - wtot * FL) / 2 - aU * FL
 
-    lsbU, wU, advU = inkbox(up)
-    lsbL, wL, advL = inkbox(lo)
-    if up == 'I':
-        wU, advU, lsbU = 0.49 * FL, 0.49 * FL + 0.10 * FL, 0.05 * FL
-    gapc = 0.12 * FL
-    wtot = advU + gapc + advL
-    gx = BX + (BW - wtot) / 2
-    xU, xL = gx, gx + advU + gapc
+    RING, DIGF, LWU = 0.8, 5.6, 1.33
 
-    def draw_hollow_pair():
-        if up == 'I':
-            bw = 0.49 * FL
-            y1, y2 = gb - CAPT + ST / 2, gb - ST / 2
-            hol([f'M {xU+bw/2:.2f} {y1:.2f} L {xU+bw/2:.2f} {y2:.2f}',
-                 f'M {xU+ST/2:.2f} {y1:.2f} L {xU+bw-ST/2:.2f} {y1:.2f}',
-                 f'M {xU+ST/2:.2f} {y2:.2f} L {xU+bw-ST/2:.2f} {y2:.2f}'], ST)
-        else:
-            A(f'<text x="{xU:.2f}" y="{gb:.2f}" font-family="School Print '
-              f'Heavy" font-size="{FL:.1f}" fill="#fff" stroke="#000" '
-              f'stroke-width="3.2" stroke-linejoin="round" '
-              f'stroke-linecap="round">{up}</text>')
-        if lo == 'e':
-            r = (XHT - ST) / 2
-            ccx, ccy = xL + lsbL + wL / 2, gb - XHT / 2
-
-            def PT(ang):
-                t = math.radians(ang)
-                return ccx + r * math.cos(t), ccy - r * math.sin(t)
-            p0, p1, p2 = PT(0), PT(150), PT(300)
-            hol([f'M {p0[0]:.2f} {p0[1]:.2f} '
-                 f'A {r:.2f} {r:.2f} 0 0 0 {p1[0]:.2f} {p1[1]:.2f} '
-                 f'A {r:.2f} {r:.2f} 0 0 0 {p2[0]:.2f} {p2[1]:.2f}',
-                 f'M {ccx-r:.2f} {ccy:.2f} L {ccx+r:.2f} {ccy:.2f}'], ST)
-        else:
-            A(f'<text x="{xL:.2f}" y="{gb:.2f}" font-family="School Print '
-              f'Heavy" font-size="{FL:.1f}" fill="#fff" stroke="#000" '
-              f'stroke-width="3.2" stroke-linejoin="round" '
-              f'stroke-linecap="round">{lo}</text>')
-
-    draw_hollow_pair()
-
-    # --- пунктир, точки и стрелки ---
-    def overlay(ch, x0ink, wink, is_upper):
-        g = {'L': x0ink + ST / 2, 'R': x0ink + wink - ST / 2,
-             'B': gb - ST / 2}
-        if is_upper:
-            g['T'] = gb - CAPT + ST / 2
-        else:
-            g['xt'] = gb - XHT + ST / 2
-            g['at'] = gb - ASCT + ST / 2
-            g['T'] = g['at'] if ch in ASCENDERS else g['xt']
-            g['db'] = gb + DESC - ST / 2 if ch in DESCENDERS else gb - ST / 2
-            g['dot'] = gb - XHT - ST * 1.15
-        used = []
-        for n, (pth, apt, adeg) in enumerate(LT.strokes(ch, g), 1):
-            if pth == 'DOT':
-                sx, sy = apt
+    def put_letter(ch, dx, dy, sc):
+        Lc = VEC[ch]
+        body = ''.join('<path d="%s"/>' % d for d in Lc['paths'])
+        A(f'<g transform="translate({dx:.3f},{dy:.3f}) scale({sc:.5f})">'
+          f'<g transform="scale({1/Lc["PPU"]}) '
+          f'translate({-Lc["left_px"]:.3f},{-Lc["base_px"]:.3f}) '
+          f'translate(0,{Lc["ph"]}) scale(0.1,-0.1)" fill="#000">{body}</g>')
+        for e in Lc.get('extra', []):
+            if e.get('kind') == 'dash':
+                d = 'M ' + ' L '.join('%.2f %.2f' % (px, py) for px, py in e['pts'])
+                A(f'<path d="{d}" fill="none" stroke="#000" stroke-width="0.62" '
+                  f'stroke-dasharray="2.2,2.2" stroke-linecap="round"/>')
+            elif e.get('kind') == 'ring':
+                A(f'<circle cx="{e["x"]:.3f}" cy="{e["y"]:.3f}" '
+                  f'r="{e["r"]-LWU/2:.3f}" fill="none" stroke="#000" '
+                  f'stroke-width="{LWU}"/>')
             else:
-                A(f'<path d="{pth}" fill="none" stroke="#000" '
-                  f'stroke-width="1.5" stroke-dasharray="4.5,4.5"/>')
-                mm = re.match(r'M ([-\d\.]+) ([-\d\.]+)', pth)
-                sx, sy = float(mm.group(1)), float(mm.group(2))
-                A(arrow_head(apt[0], apt[1], adeg, 6.2))
-            for (ux, uy) in used:
-                if abs(ux - sx) < 13 and abs(uy - sy) < 13:
-                    sx, sy = sx + 10, sy + 10
-            used.append((sx, sy))
-            A(f'<circle cx="{sx:.2f}" cy="{sy:.2f}" r="6.4" fill="#000" '
-              f'stroke="#fff" stroke-width="1.1"/>')
-            A(f'<text x="{sx:.2f}" y="{sy+3.1:.2f}" text-anchor="middle" '
-              f'font-family="Quicksand" font-weight="700" font-size="9" '
-              f'fill="#fff">{n}</text>')
+                A(f'<g transform="translate({e["x"]:.3f},{e["y"]:.3f}) '
+                  f'rotate({e["a"]})"><path d="M 0 0 '
+                  f'L {-e["s"]*1.15:.2f} {e["s"]*0.6:.2f} '
+                  f'L {-e["s"]*1.15:.2f} {-e["s"]*0.6:.2f} Z" fill="#000"/></g>')
+        for c in Lc['circles']:
+            A(f'<circle cx="{c["x"]:.3f}" cy="{c["y"]:.3f}" '
+              f'r="{CIRC_R-RING/2:.3f}" fill="#fff" stroke="#000" '
+              f'stroke-width="{RING}"/>'
+              f'<text x="{c["x"]:.3f}" y="{c["y"]+DIGF*0.35:.3f}" '
+              f'text-anchor="middle" font-family="Quicksand" font-weight="700" '
+              f'font-size="{DIGF}" fill="#000">{c["n"]}</text>')
+        A('</g>')
 
-    overlay(up, xU + lsbU, wU, True)
-    overlay(lo, xL + lsbL, wL, False)
+    put_letter(up, gx, gb, FL)
+    put_letter(lo, gx + (bU - aU + GAPU) * FL - aL * FL, gb, FL)
 
     A(f'<text x="{L+2}" y="54" font-family="Quicksand" font-weight="700" '
       f'font-size="11" fill="#000">Name</text>')
@@ -396,14 +385,19 @@ def page(letter, key, word, article, frame_i, seed):
     A(f'<rect x="{L}" y="{pn_y}" width="{CW}" height="{pn_h}" rx="9" '
       f'fill="none" stroke="#000" stroke-width="1.8"/>')
     ground = pn_y + pn_h - 26
-    A(f'<line x1="{L+28}" y1="{ground}" x2="{R-28}" y2="{ground}" '
-      f'stroke="#000" stroke-width="1" stroke-dasharray="3,5"/>')
     aw, ah, grp = art(key)
     lh = 182.0
     lw = aw / ah * lh
     if lw > CW * 0.68:
         lw = CW * 0.68
         lh = ah / aw * lw
+    if key not in NO_PATCH:
+        ground_patch(A, CX, ground - 12.0,
+                     min(max(lw * 0.70, 95.0), CW / 2 - 14), 30.0, seed)
+        sw, sh, sgrp = art(key, solid=True)
+        sgrp = re.sub(r'fill="[^"]*"', 'fill="#ffffff"', sgrp)
+        A(f'<g transform="translate({CX-lw/2:.2f},{ground-lh:.2f}) '
+          f'scale({lh/ah:.6f})">{sgrp}</g>')
     A(f'<g transform="translate({CX-lw/2:.2f},{ground-lh:.2f}) '
       f'scale({lh/ah:.6f})">{grp}</g>')
 
@@ -558,6 +552,7 @@ if __name__ == '__main__':
     import cairosvg
     from pypdf import PdfWriter
     os.makedirs('pages', exist_ok=True)
+    os.makedirs('out', exist_ok=True)
     files = []
     for nm, svg in (('00-cover', cover()), ('01-terms', terms())):
         p = 'pages/%s.pdf' % nm
@@ -584,5 +579,5 @@ if __name__ == '__main__':
     wtr = PdfWriter()
     for f in files:
         wtr.append(f)
-    wtr.write('/mnt/user-data/outputs/Build-a-Sentence-Animals-A-Z.pdf')
+    wtr.write('out/Build-a-Sentence-Animals-A-Z.pdf')
     print('страниц:', len(files))
