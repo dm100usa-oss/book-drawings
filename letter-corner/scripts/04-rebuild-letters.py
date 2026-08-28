@@ -312,5 +312,12 @@ for ch in LET:
         top=float((ys.min()-base)/PPUe), bot=float((ys.max()-base)/PPUe),
         s=s, k=k/PPU, extra=ex)
     print('%-2s s=%.4f k=%+.2f  top=%7.2f bot=%6.2f'%(ch,s,k/PPU,out[ch]['top'],out[ch]['bot']), flush=True)
-out={k:v for k,v in out.items() if k in KEEP}
-json.dump(out, open(DATA+'/vec3/letters.json','w'))
+# при сборке части букв дописываем их в общий файл, а не заменяем его
+path=DATA+'/vec3/letters.json'
+old={}
+if os.path.exists(path):
+    try: old=json.load(open(path))
+    except Exception: old={}
+old.update({k:v for k,v in out.items() if k in KEEP})
+json.dump(old, open(path,'w'))
+print('букв в файле:', len(old))
