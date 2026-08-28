@@ -38,7 +38,7 @@ BOOK = [
     ('U', [('057', 'unicorn', 'a'), ('083', 'umbrella', 'an')]),
     ('V', [('N:volcano', 'volcano', 'a'), ('N:violin', 'violin', 'a')]),
     ('W', [('042', 'whale', 'a'), ('100', 'watermelon', 'a')]),
-    ('X', [('N:xylophone', 'xylophone', 'a'), ('N:xmastree', 'Xmas tree', 'a')]),
+    ('X', [('N:xylophone', 'xylophone', 'a'), ('N:xray', 'x-ray', 'an')]),
     ('Y', [('N:yacht', 'yacht', 'a'), ('N:yeti', 'yeti', 'a')]),
     ('Z', [('003', 'zebra', 'a'), ('N:zeppelin', 'zeppelin', 'a')]),
 ]
@@ -224,7 +224,7 @@ NO_PATCH = {
     '045', '044', '040', '042', '052',  # jellyfish, octopus, shark, whale, axolotl
     'M:ocean-island', 'N:yacht',        # already surrounded by water
     '099', '109', '105', '100', '108',  # ice cream and fruit, nothing to stand on
-    'N:violin', 'N:quilt',
+    'N:violin', 'N:quilt', 'N:xray',
 }
 
 
