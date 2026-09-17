@@ -392,8 +392,6 @@ def page(letter, key, word, article, frame_i, seed):
         lw = CW * 0.68
         lh = ah / aw * lw
     if key not in NO_PATCH:
-        ground_patch(A, CX, ground - 12.0,
-                     min(max(lw * 0.70, 95.0), CW / 2 - 14), 30.0, seed)
         sw, sh, sgrp = art(key, solid=True)
         sgrp = re.sub(r'fill="[^"]*"', 'fill="#ffffff"', sgrp)
         A(f'<g transform="translate({CX-lw/2:.2f},{ground-lh:.2f}) '
@@ -473,7 +471,7 @@ def cover():
     A(f'<text x="{CX}" y="150" text-anchor="middle" font-family="Baloo 2" '
       f'font-weight="800" font-size="52" fill="#000">Build a Sentence</text>')
     A(f'<text x="{CX}" y="196" text-anchor="middle" font-family="Baloo 2" '
-      f'font-weight="800" font-size="30" fill="#9a9a9a">Animals A to Z</text>')
+      f'font-weight="800" font-size="30" fill="#9a9a9a">Animals and More A to Z</text>')
     A(f'<text x="{CX}" y="240" text-anchor="middle" font-family="Quicksand" '
       f'font-weight="600" font-size="15" fill="#000">'
       f'Cut and paste worksheets for beginning readers</text>')
@@ -492,7 +490,7 @@ def cover():
           f'scale({h/ah:.6f})">{grp}</g>')
     A(f'<text x="{CX}" y="640" text-anchor="middle" font-family="Quicksand" '
       f'font-weight="700" font-size="14" fill="#000">'
-      f'44 no-prep printable worksheets  |  Kindergarten and Grade 1</text>')
+      f'55 no-prep printable worksheets  |  Kindergarten and Grade 1</text>')
     A(f'<text x="{CX}" y="700" text-anchor="middle" font-family="Baloo 2" '
       f'font-weight="800" font-size="20" fill="#000">'
       f'Magic of Discoveries</text>')
@@ -521,7 +519,7 @@ def terms():
       f'font-size="24" fill="#000">What is inside</text>')
     ins = ['55 worksheets: two for every letter A to Z, plus 3 bonus pages.',
            'Two sentence patterns:  I see a ...   and   This is a ...',
-           'Eight sight words in total:  I, see, this, is, a, an.',
+           'Six sight words in total:  I, see, this, is, a, an.',
            'Uppercase and lowercase letter card on every page.',
            'Word cards are scrambled, so the child has to think.',
            'Black and white, no color ink needed.']
